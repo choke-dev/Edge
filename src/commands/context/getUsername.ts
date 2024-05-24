@@ -4,6 +4,7 @@ import { ContextMenuCommandBuilder, ApplicationCommandType, ContextMenuCommandIn
 export = {
     type: CommandTypes.ContextMenu,
     register: RegisterTypes.Guild,
+    disabled: true,
     data: new ContextMenuCommandBuilder()
         .setName("Get Username")
         .setType(ApplicationCommandType.User),

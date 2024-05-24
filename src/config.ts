@@ -13,11 +13,11 @@ export const commandsFolderName: string = "commands";
 export const componentsFolderName: string = "components";
 
 // Your Discord ID (for owner only commands)
-export const ownerId: string = "712205125158174751";
+export const ownerId: string = "208876506146013185";
 
 // Layout for the info logging message.
 export function getLoggerLogMessage(message: string): string {
-    return `${ConsoleColor.Green}[INFO] ${message}${ConsoleColor.Reset}`;
+    return `${ConsoleColor.Blue}[INFO] ${message}${ConsoleColor.Reset}`;
 }
 
 // Layout for the warning logging message.

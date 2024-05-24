@@ -1,13 +1,15 @@
 import "dotenv/config";
-import { AutomaticIntents } from "./handler";
+import { AutomaticIntents,  } from "./handler";
 import { DiscordClient } from "./handler/util/DiscordClient";
+import { Partials } from "discord.js";
 
 export const client: DiscordClient = new DiscordClient({
     // "AutomaticIntents" will provide your client with all necessary Intents.
     // By default, two specific Intents are enabled (Guilds, & MessageContent).
     // For details or modifications, see the config.ts file.
     // Manually adding Intents also works.
-    intents: AutomaticIntents
+    intents: AutomaticIntents,
+    partials: [ Partials.Message, Partials.Reaction, Partials.Channel ]
 });
 
 (async (): Promise<void> => {

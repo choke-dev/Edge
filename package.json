@@ -1,12 +1,12 @@
 {
-  "name": "discordjs-command-handler",
+  "name": "wedgebot",
   "version": "1.0.0",
   "description": "A comprehensive TypeScript command handler for Discord.js, featuring slash commands, prefix commands, message events, automatic intents, and more.",
   "main": "src/index.ts",
   "scripts": {
     "clean-windows": "if exist dist rd /s /q dist",
     "clean-linux": "rm -rf dist",
-    "compile": "npm run clean-windows && tsc",
+    "compile": "npm run clean-linux && tsc",
     "start": "node dist/index.js",
     "watch": "tsc -w",
     "cs": "npm run compile && npm run start"
@@ -21,6 +21,7 @@
   "dependencies": {
     "discord.js": "^14.15.2",
     "dotenv": "^16.4.5",
-    "glob": "^10.3.15"
+    "glob": "^10.3.15",
+    "tslib": "^2.6.2"
   }
 }
