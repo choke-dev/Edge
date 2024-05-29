@@ -1,4 +1,4 @@
-import { ConsoleColor } from "src/handler";
+import { ConsoleColor } from "../handler/index";
 
 export function getLoggerLogMessage(message: string): string {
     return `${ConsoleColor.Blue}[INFO] ${message}${ConsoleColor.Reset}`;
