@@ -2,7 +2,7 @@ import Logger from "./Logger";
 import { client } from "../../index";
 import { hasCooldown, isAllowedCommand } from "./handleCommands";
 import { CommandTypes, ContextMenuCommandModule, SlashCommandModule } from "../types/Command";
-import { getCommandNotAllowedEmbed, getCommandOnCooldownEmbed } from "../../config";
+import { getCommandNotAllowedEmbed, getCommandOnCooldownEmbed } from "../../functions/embedTemplates";
 import { AutocompleteInteraction, CommandInteraction, ContextMenuCommandInteraction, Interaction } from "discord.js";
 
 export async function handleInteractionCommands(interaction: Interaction): Promise<void> {

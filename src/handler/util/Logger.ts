@@ -1,4 +1,4 @@
-import { getLoggerErrorMessage, getLoggerLogMessage, getLoggerWarnMessage } from "../../config";
+import { getLoggerErrorMessage, getLoggerLogMessage, getLoggerWarnMessage } from "../../functions/loggers";
 
 export default class Logger {
     public static log(message: string, data?: any): void {

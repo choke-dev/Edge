@@ -1,7 +1,8 @@
 import { client } from "../../index";
 import { Message } from "discord.js";
 import { hasCooldown, isAllowedCommand } from "./handleCommands";
-import { getCommandOnCooldownEmbed, prefix } from "../../config";
+import { prefix } from "../../config";
+import { getCommandOnCooldownEmbed } from "../../functions/embedTemplates";
 import { CommandTypes, MessageCommandModule, PingCommandModule, PrefixCommandModule } from "../types/Command";
 
 export async function handleMessageCommands(message: Message): Promise<void> {

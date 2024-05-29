@@ -1,10 +1,12 @@
-import { Intent, ConsoleColor } from "./handler";
-import { EmbedBuilder, Interaction } from "discord.js";
+import { Intent } from "./handler";
 
-// Message command prefix.
+const emojiSets = [
+    ["👍", "😂", "😳", "🤔", "😲", "😢", "😡", "🧵"],
+    ["❤️", "🤩", "🤯", "😳", "🤨", "😐", "😢", "🧵"],
+    ["👍", "👎", "❔", "🧵"],
+];
+
 export const prefix: string = "!";
-
-// Intents which will be enabled by default.
 export const defaultIntents: Intent[] = [Intent.Guilds, Intent.MessageContent];
 
 // Default folder names.
@@ -15,32 +17,11 @@ export const componentsFolderName: string = "components";
 // Your Discord ID (for owner only commands)
 export const ownerId: string = "208876506146013185";
 
-// Layout for the info logging message.
-export function getLoggerLogMessage(message: string): string {
-    return `${ConsoleColor.Blue}[INFO] ${message}${ConsoleColor.Reset}`;
-}
-
-// Layout for the warning logging message.
-export function getLoggerWarnMessage(message: string): string {
-    return `${ConsoleColor.Yellow}[WARNING] ${message}${ConsoleColor.Reset}`;
-}
-
-// Layout for the error logging message.
-export function getLoggerErrorMessage(message: string): string {
-    return `${ConsoleColor.Red}[ERROR] ${message}${ConsoleColor.Reset}`;
-}
-
-// Generates an embed when a user lacks the necessary conditions to execute a command.
-export function getCommandNotAllowedEmbed(interaction: Interaction): EmbedBuilder {
-    return new EmbedBuilder()
-        .setTitle("You are not allowed to use this command!")
-        .setColor("#DA373C")
-}
-
-// Generates an embed when a command is on cooldown.
-export function getCommandOnCooldownEmbed(timeLeft: number, commandName: string): EmbedBuilder {
-    return new EmbedBuilder()
-        .setTitle("Command on cooldown")
-        .setColor("#DA373C")
-        .setDescription(`Please wait ${timeLeft} more second(s) before reusing the \`${commandName}\` command.`);
-}
+export const mediaChannels: Record<string, { emojiSet: string[], textAllowed: boolean }> = {
+    "1241695709212704778": { emojiSet: emojiSets[0], textAllowed: false }, // media
+    "1241669747108483072": { emojiSet: emojiSets[0], textAllowed: false }, // creations
+    "1241444035512500295": { emojiSet: emojiSets[1], textAllowed: false }, // art
+    "1241444691015110778": { emojiSet: emojiSets[0], textAllowed: false }, // memes
+    "1241431269527523409": { emojiSet: emojiSets[2], textAllowed: true }, // gamenight-suggestions
+    "1241706024969306182": { emojiSet: emojiSets[0], textAllowed: false }, // gamenight-media
+  }
