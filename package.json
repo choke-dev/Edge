@@ -1,7 +1,7 @@
 {
-  "name": "wedgebot",
+  "name": "edge",
   "version": "1.0.0",
-  "description": "A comprehensive TypeScript command handler for Discord.js, featuring slash commands, prefix commands, message events, automatic intents, and more.",
+  "description": "A discord bot written in typescript.",
   "main": "src/index.ts",
   "scripts": {
     "clean-windows": "if exist dist rd /s /q dist",
@@ -12,7 +12,7 @@
     "cs": "npm run compile && npm run start"
   },
   "keywords": [],
-  "author": "Lukas Baum",
+  "author": "choke-dev",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.12.12",

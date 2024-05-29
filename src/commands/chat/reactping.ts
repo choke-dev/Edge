@@ -7,6 +7,7 @@ const unicodeEmojiRegex = /(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)/gu;
 
 export = {
     name: "reactping",
+    disabled: true,
     type: CommandTypes.PrefixCommand,
     async execute(message: Message): Promise<void> {
         const repliedMessage = await message.fetchReference().catch(() => null);
