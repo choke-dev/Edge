@@ -1,7 +1,7 @@
 import { EventModule } from "../handler";
 import { Events, Message, PermissionFlagsBits } from "discord.js";
 import Logger from "../handler/util/Logger";
-import { mediaChannels } from "src/config";
+import { mediaChannels } from "../config";
 
 export = {
     name: Events.MessageCreate,
@@ -9,7 +9,7 @@ export = {
         if (!message?.guildId) return;
 
         const channelId = String(message.channelId);
-        const channelConfig = (mediaChannels as Record<string, { emojiSet: string[], textAllowed: boolean }>)[channelId];
+        const channelConfig = mediaChannels[channelId];
         if (!channelConfig) return;
 
         if (message.author.id === message.client.user.id) {

@@ -1,6 +1,6 @@
 import { Events, MessageReaction, ThreadAutoArchiveDuration, User } from "discord.js";
 import { EventModule } from "../handler";
-import { mediaChannels } from "src/config";
+import { mediaChannels } from "../config";
 
 export = {
     name: Events.MessageReactionAdd,
