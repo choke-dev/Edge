@@ -1,12 +1,13 @@
-import { EventModule } from "../handler";
-import { Embed, EmbedBuilder, Events, Message } from "discord.js";
-import { DiscordClient } from "../handler/util/DiscordClient";
-import { minecraft } from "../config";
-import { JsonDB, Config } from 'node-json-db';
-import { AsyncTask } from "toad-scheduler";
 const { ToadScheduler, SimpleIntervalJob } = require('toad-scheduler')
+import { Embed, EmbedBuilder, Events, Message } from "discord.js";
+import { JsonDB, Config } from 'node-json-db';
 import mc from "@ahdg/minecraftstatuspinger";
+import { AsyncTask } from "toad-scheduler";
+
+import { DiscordClient } from "../handler/util/DiscordClient";
 import { ServerStatus } from "src/handler/types/MCStatus";
+import { EventModule } from "../handler";
+import { minecraft } from "../config";
 
 var db = new JsonDB(new Config("data", true, false, '/'));
 const scheduler = new ToadScheduler()
@@ -75,14 +76,14 @@ async function updateMessageEmbed(client: DiscordClient, embed: Embed, message?:
   }
 }
 
-async function updateServerStatusEmbed(client: DiscordClient): Promise<EmbedBuilder> {
+async function updateServerStatusEmbed(): Promise<Embed> {
   const serverData = await queryServerStatus();
   const serverStatusEmbed = new EmbedBuilder()
   
   if (!serverData[0] || !serverData[0].status?.players) {
     serverStatusEmbed.setAuthor({ name: 'The server is currently offline.', iconURL: minecraft.iconSettings.offline })
     serverStatusEmbed.setColor("#000000")
-    return serverStatusEmbed;
+    return serverStatusEmbed as unknown as Embed
   }
   
   const activePlayerCount = serverData[0].status?.players.sample?.length ?? serverData[0].status?.players.online
@@ -100,7 +101,7 @@ async function updateServerStatusEmbed(client: DiscordClient): Promise<EmbedBuil
   .setColor( (activePlayerCount >= 1 ? "#3fb950" : "#000000") )
   .setDescription(playerList)
   .setFooter({ text: (serverLatency ? `Latency: ${serverLatency}ms` : "​") })
-  return serverStatusEmbed;
+  return serverStatusEmbed as unknown as Embed
 }   
 
 export = {
@@ -108,7 +109,7 @@ export = {
   once: true,
   async execute(client: DiscordClient): Promise<void> {
     let serverStatusMessage = await serverStatusEmbedExists(client);
-    let serverStatusEmbed = await updateServerStatusEmbed(client) as unknown as Embed;
+    let serverStatusEmbed = await updateServerStatusEmbed()
     
     updateMessageEmbed(client, serverStatusEmbed, serverStatusMessage)
     
@@ -116,7 +117,7 @@ export = {
       "Minecraft server status update loop", 
       async () => {
         serverStatusMessage = await serverStatusEmbedExists(client);
-        serverStatusEmbed = await updateServerStatusEmbed(client) as unknown as Embed;
+        serverStatusEmbed = await updateServerStatusEmbed()
         updateMessageEmbed(client, serverStatusEmbed, serverStatusMessage)
       },
       (err: Error) => {}
