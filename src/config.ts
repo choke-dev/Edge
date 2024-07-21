@@ -8,7 +8,7 @@ const emojiSets = [
 ];
 
 export const prefix: string = "!";
-export const defaultIntents: Intent[] = [Intent.Guilds, Intent.MessageContent];
+export const defaultIntents: Intent[] = [Intent.Guilds, Intent.MessageContent, Intent.GuildMembers, Intent.GuildPresences];
 
 // Default folder names.
 export const eventsFolderName: string = "events";
@@ -51,3 +51,10 @@ export const minecraft = {
         get offline() { return `https://wsrv.nl/?url=${this.online}&sat=0` }
     }
 }; // mc-server-info
+
+export const hourlyExclusive = {
+    guildId: process.env["GUILD_ID"],
+    channelId: "1264554134099591178",
+    roleId: "1264559103876010056",
+    ineligibleUserStates: ["invisible", "offline"],
+}
