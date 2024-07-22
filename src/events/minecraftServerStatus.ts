@@ -108,6 +108,7 @@ export = {
   name: Events.ClientReady,
   once: true,
   async execute(client: DiscordClient): Promise<void> {
+    if (!minecraft.enabled) return;
     let serverStatusMessage = await serverStatusEmbedExists(client);
     let serverStatusEmbed = await updateServerStatusEmbed()
     

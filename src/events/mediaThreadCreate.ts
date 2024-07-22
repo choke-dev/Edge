@@ -6,7 +6,7 @@ export = {
     name: Events.MessageReactionAdd,
     async execute(messageReaction: MessageReaction, reacter: User): Promise<void> {
         if (messageReaction.emoji.name !== "🧵") return;
-        if (!mediaChannels[messageReaction.message.channelId]) return;
+        if (!mediaChannels.channels[messageReaction.message.channelId]) return;
         if (reacter.id === messageReaction.client.user.id) return;
 
         messageReaction.remove();

@@ -5,6 +5,7 @@ import { hourlyExclusive } from "../config";
 export = {
     name: Events.MessageUpdate,
     async execute(_oldMessage: Message, newMessage: Message): Promise<void> {
+        if (!hourlyExclusive.enabled) return;
         if (!newMessage.guild) return;
         if (!newMessage.member) return;
         if (!newMessage.member.roles.cache.has(hourlyExclusive.roleId)) return;

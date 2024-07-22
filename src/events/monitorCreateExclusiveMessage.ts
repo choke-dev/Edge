@@ -7,6 +7,7 @@ let userIdOfUserWhoSentFirstMessage: string;
 export = {
     name: Events.MessageCreate,
     async execute(message: Message): Promise<void> {
+        if (!hourlyExclusive.enabled) return;
         if (!message.guild) return;
         if (!message.member) return;
         if (!message.member.roles.cache.has(hourlyExclusive.roleId)) return;

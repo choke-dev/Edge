@@ -29,19 +29,23 @@ export const activity = {
     ]
 }
 
-export const mediaChannels: Record<string, { emojiSet: string[], textAllowed: boolean }> = {
-    "1241695709212704778": { emojiSet: emojiSets[0], textAllowed: false }, // media
-    "1241669747108483072": { emojiSet: emojiSets[0], textAllowed: false }, // creations
-    "1241444035512500295": { emojiSet: emojiSets[1], textAllowed: false }, // art
-    "1241444691015110778": { emojiSet: emojiSets[0], textAllowed: false }, // memes
-    "1241431269527523409": { emojiSet: emojiSets[2], textAllowed: true }, // gamenight-suggestions
-    "1241706024969306182": { emojiSet: emojiSets[0], textAllowed: false }, // gamenight-media
-    "1262585217437139026": { emojiSet: emojiSets[0], textAllowed: false }, // mc-media
-    "1262650657010221126": { emojiSet: emojiSets[1], textAllowed: false }, // cat
+export const mediaChannels = {
+    enabled: true,
+    channels: {
+        "1241695709212704778": { emojiSet: emojiSets[0], textAllowed: false }, // media
+        "1241669747108483072": { emojiSet: emojiSets[0], textAllowed: false }, // creations
+        "1241444035512500295": { emojiSet: emojiSets[1], textAllowed: false }, // art
+        "1241444691015110778": { emojiSet: emojiSets[0], textAllowed: false }, // memes
+        "1241431269527523409": { emojiSet: emojiSets[2], textAllowed: true }, // gamenight-suggestions
+        "1241706024969306182": { emojiSet: emojiSets[0], textAllowed: false }, // gamenight-media
+        "1262585217437139026": { emojiSet: emojiSets[0], textAllowed: false }, // mc-media
+        "1262650657010221126": { emojiSet: emojiSets[1], textAllowed: false }, // cat
+    } as Record<string, { emojiSet: string[], textAllowed: boolean }>
 }
 
 // Minecraft Server Status
 export const minecraft = {
+    enabled: true,
     serverStatusChannel: "1262585183714938960",
     targetServerIP: "mc.choke.dev",
     refreshInterval: 30 * 1000,
@@ -53,6 +57,7 @@ export const minecraft = {
 }; // mc-server-info
 
 export const hourlyExclusive = {
+    enabled: true,
     guildId: process.env["GUILD_ID"],
     channelId: "1264554134099591178",
     roleId: "1264559103876010056",

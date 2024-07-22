@@ -7,6 +7,7 @@ import { assignHourlyExclusive } from "../functions/hourlyExclusive";
 export = {
     name: Events.PresenceUpdate,
     async execute(_oldPresence: Presence, newPresence: Presence): Promise<void> {
+        if (!hourlyExclusive.enabled) return;
         if (!newPresence.guild) return;
         if (!newPresence.member) return;
         if (!newPresence.member.roles.cache.has(hourlyExclusive.roleId)) return;

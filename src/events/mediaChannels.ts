@@ -9,7 +9,7 @@ export = {
         if (!message?.guildId) return;
 
         const channelId = String(message.channelId);
-        const channelConfig = mediaChannels[channelId];
+        const channelConfig = mediaChannels.channels[channelId];
         if (!channelConfig) return;
 
         if (message.author.id === message.client.user.id) {
