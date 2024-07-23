@@ -57,7 +57,7 @@ export const minecraft = {
 }; // mc-server-info
 
 export const hourlyExclusive = {
-    enabled: true,
+    enabled: false,
     guildId: process.env["GUILD_ID"],
     channelId: "1264554134099591178",
     roleId: "1264559103876010056",

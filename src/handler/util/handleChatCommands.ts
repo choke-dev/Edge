@@ -1,9 +1,9 @@
 import { client } from "../../index";
 import { Message } from "discord.js";
 import { hasCooldown, isAllowedCommand } from "./handleCommands";
-import { prefix } from "../../config";
 import { getCommandOnCooldownEmbed } from "../../functions/embedTemplates";
 import { CommandTypes, MessageCommandModule, PingCommandModule, PrefixCommandModule } from "../types/Command";
+import { prefix } from "../../config";
 
 export async function handleMessageCommands(message: Message): Promise<void> {
     if (!client.user) return;
@@ -54,7 +54,7 @@ async function handleCommand(
             return;
         }
 
-        if (!await isAllowedCommand(commandModule, message.member?.user, message.guild, message.channel, message.member)) {
+        if (isAllowedCommand(commandModule, message.member?.user, message.guild, message.channel, message.member)) {
             await commandModule.execute(message);
         }
     }

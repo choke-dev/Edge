@@ -41,7 +41,12 @@ export interface CooldownCollections {
     user: Collection<string, Collection<string, number>>;
 }
 
-export type CommandModule = SlashCommandModule | PrefixCommandModule | MessageCommandModule | PingCommandModule | ContextMenuCommandModule;
+export type CommandModule =
+    SlashCommandModule
+    | PrefixCommandModule
+    | MessageCommandModule
+    | PingCommandModule
+    | ContextMenuCommandModule;
 
 interface BaseCommandModule {
     cooldown?: number;
@@ -50,10 +55,17 @@ interface BaseCommandModule {
     userBlacklist?: string[];
     channelWhitelist?: string[];
     channelBlacklist?: string[];
+    categoryWhitelist?: string[];
+    categoryBlacklist?: string[];
     guildWhitelist?: string[];
     guildBlacklist?: string[];
     roleWhitelist?: string[];
     roleBlacklist?: string[];
+    optionalUserWhitelist?: string[];
+    optionalChannelWhitelist?: string[];
+    optionalCategoryWhitelist?: string[];
+    optionalGuildWhitelist?: string[];
+    optionalRoleWhitelist?: string[];
     nsfw?: boolean;
     disabled?: boolean;
 }
