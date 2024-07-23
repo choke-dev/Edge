@@ -1,7 +1,7 @@
 import { Events, Message } from "discord.js";
 import { EventModule } from "../handler";
 import { hourlyExclusive } from "../config";
-import Logger from "src/handler/util/Logger";
+import Logger from "../handler/util/Logger";
 
 export = {
     name: Events.MessageUpdate,

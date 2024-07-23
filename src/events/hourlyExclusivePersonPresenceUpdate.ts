@@ -3,7 +3,7 @@ import { EventModule } from "../handler";
 import { hourlyExclusive } from "../config";
 import { DiscordClient } from "src/handler/util/DiscordClient";
 import { assignHourlyExclusive } from "../functions/hourlyExclusive";
-import Logger from "src/handler/util/Logger";
+import Logger from "../handler/util/Logger";
 
 export = {
     name: Events.PresenceUpdate,
