@@ -188,8 +188,7 @@ export = {
             return;
         }
 
-        // @ts-ignore compiler blind
-        if (parsedTimeoutDuration! > (28 * 24 * 60 * 60 * 1000)) {
+        if (parsedTimeoutDuration > (28 * 24 * 60 * 60 * 1000)) {
             interaction.reply({ content: ":x: Duration must be less than 28 days", ephemeral: true });
             return;
         }
