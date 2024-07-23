@@ -62,4 +62,5 @@ export const hourlyExclusive = {
     channelId: "1264554134099591178",
     roleId: "1264559103876010056",
     ineligibleUserStates: ["invisible", "offline"],
+    blacklistedUsers: ["924111005791957062"],
 }

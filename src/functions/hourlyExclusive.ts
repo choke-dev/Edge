@@ -11,9 +11,10 @@ const getRandomOnlineMember = async (client: DiscordClient): Promise<GuildMember
     const onlineMembers = guildMembers
     .filter(member => !member.user.bot)
     .filter(member => member.presence && !hourlyExclusive.ineligibleUserStates.includes(member.presence.status.toString()))
-    .filter(member => !member.roles.cache.has(hourlyExclusive.roleId));
+    .filter(member => !member.roles.cache.has(hourlyExclusive.roleId))
+    .filter(member => !hourlyExclusive.blacklistedUsers.includes(member.user.id));
 
-    const chosenMember = onlineMembers.random();
+    const chosenMember = onlineMembers?.random();
     if (!chosenMember) return await getRandomOnlineMember(client);
 
     return chosenMember

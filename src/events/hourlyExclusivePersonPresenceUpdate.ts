@@ -3,6 +3,7 @@ import { EventModule } from "../handler";
 import { hourlyExclusive } from "../config";
 import { DiscordClient } from "src/handler/util/DiscordClient";
 import { assignHourlyExclusive } from "../functions/hourlyExclusive";
+import Logger from "src/handler/util/Logger";
 
 export = {
     name: Events.PresenceUpdate,
@@ -12,7 +13,11 @@ export = {
         if (!newPresence.member) return;
         if (!newPresence.member.roles.cache.has(hourlyExclusive.roleId)) return;
         if (!hourlyExclusive.ineligibleUserStates.includes(newPresence.status.toString())) return;
-        newPresence.member.roles.remove(hourlyExclusive.roleId);
+        try {
+            newPresence.member.roles.remove(hourlyExclusive.roleId);
+        } catch(err) {
+            Logger.warn(`An error occured while removing role: ${err}`)
+        }
         assignHourlyExclusive(newPresence.client as DiscordClient);
     }
 } as EventModule;

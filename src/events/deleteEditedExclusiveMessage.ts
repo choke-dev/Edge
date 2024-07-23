@@ -1,6 +1,7 @@
 import { Events, Message } from "discord.js";
 import { EventModule } from "../handler";
 import { hourlyExclusive } from "../config";
+import Logger from "src/handler/util/Logger";
 
 export = {
     name: Events.MessageUpdate,
@@ -11,7 +12,11 @@ export = {
         if (!newMessage.member.roles.cache.has(hourlyExclusive.roleId)) return;
         if (newMessage.channelId !== hourlyExclusive.channelId) return;
 
-        newMessage.delete();
+        try {
+            newMessage.delete();
+        } catch(err) {
+            Logger.warn(`An error occured while deleting message: ${err}`)
+        }
         return;
     }
 } as EventModule;

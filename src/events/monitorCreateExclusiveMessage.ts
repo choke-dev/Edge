@@ -1,6 +1,7 @@
 import { Events, Message } from "discord.js";
 import { EventModule } from "../handler";
 import { hourlyExclusive } from "../config";
+import Logger from "src/handler/util/Logger";
 
 let userIdOfUserWhoSentFirstMessage: string;
 
@@ -18,6 +19,10 @@ export = {
             return;
         }
 
-        message.delete();
+        try {
+            message.delete();
+        } catch(err) {
+            Logger.warn(`An error occured while deleting message: ${err}`)
+        }
     }
 } as EventModule;
