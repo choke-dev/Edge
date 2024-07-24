@@ -65,7 +65,7 @@ const canClientTimeout = (member: GuildMember): [boolean, string | null] => {
     if (!clientMember) return [false, "I am not in this server"]; // idk how this can happen
     
     const clientRolePosition = clientMember.roles.highest.comparePositionTo(member.roles.highest)
-    console.log({ clientRolePosition });
+    
     if (clientRolePosition === 0) {
         return [false, "I cannot put this user in timeout because they have the same role as me"];
     } else if (clientRolePosition > 0) {
@@ -88,7 +88,7 @@ const canTimeoutMember = (executor: GuildMember, member: GuildMember): [boolean,
     }
 
     const rolePosition = member.roles.highest.comparePositionTo(executor.roles.highest)
-    console.log({ rolePosition });
+
     if (rolePosition === 0) {
         return [false, "You cannot put this user in timeout because they have the same role as you"];
     } else if (rolePosition > 0) {
