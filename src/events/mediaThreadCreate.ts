@@ -13,6 +13,11 @@ export = {
             
         const message = messageReaction.message
         let threadName: string = message?.content?.split("\n")[0] || "...";
+        threadName = threadName.replace(/<@!?(\d+)>/g, (match, id) => {
+            const member = message.guild?.members.cache.get(id);
+            if (member) return `@${member.nickname ?? member.user.username}`;
+            return match;
+        });
             
         if (threadName?.length > 100) {
           threadName = threadName.slice(0, 100);
