@@ -9,14 +9,14 @@ const parseTimeInput = (input: string): { value: number, unit: string } | null =
     if (!match) {
         return null;
     }
-
+    
     const value = parseInt(match[1], 10);
     const unit = match[2];
-
+    
     if (!timeUnits.includes(unit)) {
         return null;
     }
-
+    
     return { value, unit };
 }
 
@@ -25,37 +25,37 @@ const calculateFutureTimestamp = (input: string): number | null => {
     if (!parsed) {
         return null;
     }
-
+    
     const { value, unit } = parsed;
     const now = Math.floor(Date.now() / 1000);
-
+    
     let multiplier;
     switch (unit) {
         case 's':
-            multiplier = 1;
-            break;
+        multiplier = 1;
+        break;
         case 'm':
-            multiplier = 60;
-            break;
+        multiplier = 60;
+        break;
         case 'h':
-            multiplier = 60 * 60;
-            break;
+        multiplier = 60 * 60;
+        break;
         case 'd':
-            multiplier = 24 * 60 * 60;
-            break;
+        multiplier = 24 * 60 * 60;
+        break;
         case 'w':
-            multiplier = 7 * 24 * 60 * 60;
-            break;
+        multiplier = 7 * 24 * 60 * 60;
+        break;
         case 'mo':
-            multiplier = 30 * 24 * 60 * 60;
-            break;
+        multiplier = 30 * 24 * 60 * 60;
+        break;
         case 'y':
-            multiplier = 365 * 24 * 60 * 60;
-            break;
+        multiplier = 365 * 24 * 60 * 60;
+        break;
         default:
-            return null;
+        return null;
     }
-
+    
     return now + (value * multiplier);
 }
 
@@ -71,7 +71,7 @@ const canClientTimeout = (member: GuildMember): [boolean, string | null] => {
     } else if (clientRolePosition > 0) {
         return [false, "I cannot put this user in timeout because they have a higher role than me"];
     }
-
+    
     return [true, null];
 }
 
@@ -81,14 +81,14 @@ const canTimeoutMember = (executor: GuildMember, member: GuildMember): [boolean,
     if (memberBot) {
         return [false, "You cannot put bots in timeout"];
     }
-
+    
     const isTargetSelf = executor.id === member.id;
     if (isTargetSelf) {
         return [false, "You cannot put yourself in timeout"];
     }
-
+    
     const rolePosition = member.roles.highest.comparePositionTo(executor.roles.highest)
-
+    
     if (rolePosition === 0) {
         return [false, "You cannot put this user in timeout because they have the same role as you"];
     } else if (rolePosition > 0) {
@@ -98,12 +98,151 @@ const canTimeoutMember = (executor: GuildMember, member: GuildMember): [boolean,
     return [true, null];
 }
 
+const addTimeout = async (interaction: ChatInputCommandInteraction) => {
+    const executorMember = await interaction.guild?.members.fetch(interaction.user.id);
+    const timeoutMember = await interaction.guild?.members.fetch(interaction.options.getUser("user", true).id);
+    const timeoutDuration = interaction.options.getString("time", true)
+    const parsedTimeoutDuration = calculateFutureTimestamp( timeoutDuration )
+    const timeoutReason = interaction.options.getString("reason") ?? "No reason provided"
+    const notifyUser = interaction.options.getBoolean("notify") ?? true;
+    
+    if (!executorMember) return;
+    if (!timeoutMember) {
+        interaction.reply({ content: ":x: Specified member is not in this server", ephemeral: true });
+        return;
+    }
+    
+    const [canTimeout, reason] = canTimeoutMember(executorMember, timeoutMember);
+    if (!canTimeout && reason) {
+        interaction.reply({ content: `:x: ${reason}`, ephemeral: true });
+        return;
+    }
+    
+    const [canPutInTimeout, reason2] = canClientTimeout(timeoutMember);
+    if (!canPutInTimeout && reason2) {
+        interaction.reply({ content: `:x: ${reason2}`, ephemeral: true });
+        return;
+    }
+    
+    if (!parsedTimeoutDuration) {
+        interaction.reply({ content: ":x: Specified duration is invalid", ephemeral: true });
+        return;
+    }
+    
+    if (parsedTimeoutDuration > (28 * 24 * 60 * 60 * 1000)) {
+        interaction.reply({ content: ":x: Duration must be less than 28 days", ephemeral: true });
+        return;
+    }
+    
+    if (!timeoutMember) {
+        interaction.reply({ content: ":x: Specified member is not in this server", ephemeral: true });
+        return;
+    }
+    
+    if (timeoutMember.communicationDisabledUntilTimestamp) {
+        interaction.reply({ content: ":x: Member is already timed out", ephemeral: true });
+        return;
+    }
+    
+    try {
+        await timeoutMember.timeout(parsedTimeoutDuration, `${timeoutReason} • Moderator: ${interaction.user.username} (${interaction.user.id})`)
+    } catch(error) {
+        Logger.error(`Failed to timeout ${timeoutMember.user.username} (${timeoutMember.user.id})`, error);
+        interaction.reply({ content: `:x: An error occured while trying to timeout ${timeoutMember.user}`, ephemeral: true });
+        return;
+    }
+    
+    const timeoutEmbed = new EmbedBuilder()
+    .setTitle("User timed out")
+    .setDescription([
+        `User: ${timeoutMember.user}`,
+        `Duration: ${timeoutDuration} (<t:${parsedTimeoutDuration}:R>)`,
+        `Reason: ${timeoutReason}`
+    ].join("\n"))
+    .setColor("#43b582")
+    
+    interaction.reply({ embeds: [timeoutEmbed], ephemeral: true });
+    
+    try {
+        if (!notifyUser) return;
+        const userDM = await timeoutMember.user.createDM();
+        const timeoutNotificationEmbed = new EmbedBuilder()
+        .setTitle(`You have been timed out from ${interaction.guild?.name}`)
+        .setDescription([
+            `Duration: ${timeoutDuration} (<t:${parsedTimeoutDuration}:R>)`,
+            `Reason: ${timeoutReason}`
+        ].join("\n"))
+        .setColor("#f23f42")
+        userDM.send({ embeds: [timeoutNotificationEmbed] })
+    } catch(error) {
+        Logger.error(`An error occured while trying to DM ${timeoutMember.user}`, error);
+        interaction.followUp({ content: `:warning: An error occured while trying to DM ${timeoutMember.user}`, ephemeral: true });
+    }
+}
+
+const removeTimeout = async (interaction: ChatInputCommandInteraction) => {
+    const executorMember = await interaction.guild?.members.fetch(interaction.user.id);
+    const timeoutMember = await interaction.guild?.members.fetch(interaction.options.getUser("user", true).id);
+    const timeoutReason = interaction.options.getString("reason") ?? "No reason provided";
+    const notifyUser = interaction.options.getBoolean("notify") ?? true;
+    
+    if (!executorMember) return;
+    if (!timeoutMember) {
+        interaction.reply({ content: ":x: Specified member is not in this server", ephemeral: true });
+        return;
+    }
+
+    const [canTimeout, reason] = canTimeoutMember(executorMember, timeoutMember);
+    if (!canTimeout && reason) {
+        interaction.reply({ content: `:x: ${reason}`, ephemeral: true });
+        return;
+    }
+
+    if (!timeoutMember?.communicationDisabledUntil) {
+        interaction.reply({ content: ":x: Member is not timed out", ephemeral: true });
+        return;
+    }
+
+    try {
+        await timeoutMember.timeout(0, `${timeoutReason} • Moderator: ${interaction.user.username} (${interaction.user.id})`);
+    } catch(error) {
+        Logger.error(`Failed to remove timeout from ${timeoutMember.user.username} (${timeoutMember.user.id})`, error);
+    }
+
+    const timeoutEmbed = new EmbedBuilder()
+    .setTitle("User timeout removed")
+    .setDescription([
+        `User: ${timeoutMember.user}`,
+        `Reason: ${timeoutReason}`
+    ].join("\n"))
+    interaction.reply({ embeds: [timeoutEmbed], ephemeral: true });
+
+    try {
+        if (!notifyUser) return;
+        if (!timeoutMember) return;
+        const userDM = await timeoutMember.user.createDM();
+        const timeoutNotificationEmbed = new EmbedBuilder()
+        .setTitle(`Your timeout has from ${interaction.guild?.name} has been removed`)
+        .setDescription([
+            `Reason: ${timeoutReason}`
+        ].join("\n"))
+        .setColor("#f23f42")
+        userDM.send({ embeds: [timeoutNotificationEmbed] })
+    } catch(error) {
+        Logger.error(`An error occured while trying to DM ${timeoutMember.user}`, error);
+        interaction.reply({ content: `:warning: An error occured while trying to DM ${timeoutMember.user}`, ephemeral: true });
+    }
+}
+
 export = {
     type: CommandTypes.SlashCommand,
     register: RegisterTypes.Guild,
     data: new SlashCommandBuilder()
-        .setName("timeout")
-        .setDescription("???")
+    .setName("timeout")
+    .setDescription("???")
+    .addSubcommand( subcommand => subcommand
+        .setName('add')
+        .setDescription('Adds a timeout to a user')
         .addUserOption(option => option
             .setName('user')
             .setDescription('Specifies the user to be timed out')
@@ -123,9 +262,28 @@ export = {
             .setName('notify')
             .setDescription('Whether or not to notify the user (Default: true)')
         )
-        
-        .setDefaultMemberPermissions(PermissionFlagsBits.MuteMembers),
+    )
+    
+    .addSubcommand( subcommand => subcommand
+        .setName('remove')
+        .setDescription('Removes a timeout from a user')
+        .addUserOption(option => option
+            .setName('user')
+            .setDescription('Specifies the user to be timed out')
+            .setRequired(true)
+        )
+        .addStringOption(option => option
+            .setName('reason')
+            .setDescription('Specifies the reason for the timeout')
+        )
+        .addBooleanOption(option => option
+            .setName('notify')
+            .setDescription('Whether or not to notify the user (Default: true)')
+        )
+    )
 
+    .setDefaultMemberPermissions(PermissionFlagsBits.MuteMembers),
+    
     async autocomplete(interaction) {
         const durationSet = [
             { name: "5m", value: "5m" },
@@ -139,103 +297,34 @@ export = {
             { name: "1d", value: "1d" }
         ];
         const focusedValue = interaction.options.getFocused();
-    
+        
         for (const timeUnit of timeUnits) {
             if (!focusedValue.endsWith(timeUnit)) continue;
             return interaction.respond([{ name: focusedValue, value: focusedValue }]);
         }
-
+        
         const isNumber = !isNaN(Number(focusedValue)) && focusedValue !== '';
         if (!isNumber) {
             return interaction.respond(durationSet);
         }
-    
+        
         // Return the suggestions
         await interaction.respond(timeUnits.map(unit => ({
             name: `${focusedValue}${unit}`,
             value: `${focusedValue}${unit}`
         })));
     },
-
+    
     async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-        const executorMember = await interaction.guild?.members.fetch(interaction.user.id);
-        const timeoutMember = await interaction.guild?.members.fetch(interaction.options.getUser("user", true).id);
-        const timeoutDuration = interaction.options.getString("time", true)
-        const parsedTimeoutDuration = calculateFutureTimestamp( timeoutDuration )
-        const timeoutReason = interaction.options.getString("reason") ?? "No reason provided"
-        const notifyUser = interaction.options.getBoolean("notify") ?? true;
+        const subcommand = interaction.options.getSubcommand();
 
-        if (!executorMember) return;
-        if (!timeoutMember) {
-            interaction.reply({ content: ":x: Specified member is not in this server", ephemeral: true });
-            return;
+        switch (subcommand) {
+            case 'add':
+                await addTimeout(interaction);
+                break;
+            case 'remove':
+                await removeTimeout(interaction);
+                break;
         }
-
-        const [canTimeout, reason] = canTimeoutMember(executorMember, timeoutMember);
-        if (!canTimeout && reason) {
-            interaction.reply({ content: `:x: ${reason}`, ephemeral: true });
-            return;
-        }
-
-        const [canPutInTimeout, reason2] = canClientTimeout(timeoutMember);
-        if (!canPutInTimeout && reason2) {
-            interaction.reply({ content: `:x: ${reason2}`, ephemeral: true });
-            return;
-        }
-
-        if (!parsedTimeoutDuration) {
-            interaction.reply({ content: ":x: Specified duration is invalid", ephemeral: true });
-            return;
-        }
-
-        if (parsedTimeoutDuration > (28 * 24 * 60 * 60 * 1000)) {
-            interaction.reply({ content: ":x: Duration must be less than 28 days", ephemeral: true });
-            return;
-        }
-
-        if (!timeoutMember) {
-            interaction.reply({ content: ":x: Specified member is not in this server", ephemeral: true });
-            return;
-        }
-
-        if (timeoutMember.communicationDisabledUntilTimestamp) {
-            interaction.reply({ content: ":x: Member is already timed out", ephemeral: true });
-            return;
-        }
-
-        try {
-            await timeoutMember.timeout(parsedTimeoutDuration, `${timeoutReason} • Moderator: ${interaction.user.username} (${interaction.user.id})`)
-        } catch(error) {
-            Logger.error(`Failed to timeout ${timeoutMember.user.username} (${timeoutMember.user.id})`, error);
-            interaction.reply({ content: `:x: An error occured while trying to timeout ${timeoutMember.user}`, ephemeral: true });
-            return;
-        }
-
-        try {
-            if (!notifyUser) return;
-            const userDM = await timeoutMember.user.createDM();
-            const timeoutNotificationEmbed = new EmbedBuilder()
-            .setTitle(`You have been timed out from ${interaction.guild?.name}`)
-            .setDescription([
-                `Duration: ${timeoutDuration} (<t:${parsedTimeoutDuration}:R>)`,
-                `Reason: ${timeoutReason}`
-            ].join("\n"))
-            .setColor("#f23f42")
-            userDM.send({ embeds: [timeoutNotificationEmbed] })
-        } catch(error) {
-            Logger.error(`An error occured while trying to DM ${timeoutMember.user}`, error);
-            interaction.reply({ content: `:warning: An error occured while trying to DM ${timeoutMember.user}`, ephemeral: true });
-        }
-
-        const timeoutEmbed = new EmbedBuilder()
-            .setTitle("User timed out")
-            .setDescription([
-                `User: ${timeoutMember.user}`,
-                `Duration: ${timeoutDuration} (<t:${parsedTimeoutDuration}:R>)`,
-                `Reason: ${timeoutReason}`
-            ].join("\n"))
-            .setColor("#43b582")
-
-        await interaction.reply({ embeds: [timeoutEmbed], ephemeral: true });
     }
 } as SlashCommandModule;
