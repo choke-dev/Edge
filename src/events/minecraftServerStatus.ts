@@ -5,9 +5,10 @@ import mc from "@ahdg/minecraftstatuspinger";
 import { AsyncTask } from "toad-scheduler";
 
 import { DiscordClient } from "../handler/util/DiscordClient";
-import { ServerStatus } from "src/handler/types/MCStatus";
+import { ServerStatus } from "../handler/types/MCStatus";
 import { EventModule } from "../handler";
 import { minecraft } from "../config";
+import Logger from "../handler/util/Logger";
 
 var db = new JsonDB(new Config("data", true, false, '/'));
 const scheduler = new ToadScheduler()
@@ -59,6 +60,7 @@ async function updateMessageEmbed(client: DiscordClient, embed: Embed, message?:
   }
 
   if (!message) {
+    Logger.warn("MC Server status message does not exist, creating new one...")
     const serverStatusChannel = await getServerStatusChannel(client);
     const serverStatusMessage = await serverStatusChannel.send(messageSendOptions)
     db.push('/messageId', serverStatusMessage.id)
@@ -68,7 +70,12 @@ async function updateMessageEmbed(client: DiscordClient, embed: Embed, message?:
   try {
     await message.edit(messageSendOptions)
     return;
-  } catch(_err) {
+  } catch(err) {
+    const serverStatusEmbedMessage = await serverStatusEmbedExists(client)
+    if (serverStatusEmbedMessage) {
+      Logger.warn(`Failed to edit MC Server status embed: ${err}`)
+      return;
+    }
     const serverStatusChannel = await getServerStatusChannel(client);
     const serverStatusMessage = await serverStatusChannel.send(messageSendOptions)
     db.push('/messageId', serverStatusMessage.id)
