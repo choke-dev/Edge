@@ -1,5 +1,5 @@
 const { ToadScheduler, SimpleIntervalJob } = require('toad-scheduler')
-import { Embed, EmbedBuilder, Events, Message } from "discord.js";
+import { AttachmentBuilder, Base64String, BaseMessageOptions, Embed, EmbedBuilder, Events, Message } from "discord.js";
 import { JsonDB, Config } from 'node-json-db';
 import mc from "@ahdg/minecraftstatuspinger";
 import { AsyncTask } from "toad-scheduler";
@@ -12,6 +12,7 @@ import Logger from "../handler/util/Logger";
 
 var db = new JsonDB(new Config("data", true, false, '/'));
 const scheduler = new ToadScheduler()
+let serverIcon: Base64String;
 
 async function getServerStatusChannel(client: DiscordClient) {
   let serverStatusChannel = await client.channels.cache.get(minecraft.serverStatusChannel)
@@ -27,7 +28,7 @@ async function getServerStatusChannel(client: DiscordClient) {
 }
 
 async function serverStatusEmbedExists(client: DiscordClient) {
-  const serverStatusMessageId = await db.getObjectDefault("/messageId", null);
+  const serverStatusMessageId = await db.getObjectDefault("/minecraft/messageId", null);
   if (!serverStatusMessageId) {
     return null;
   }
@@ -53,18 +54,26 @@ async function queryServerStatus(): Promise<[ServerStatus, null] | [null, unknow
   }
 }
 
-async function updateMessageEmbed(client: DiscordClient, embed: Embed, message?: Message | null): Promise<void> {  
-  const messageSendOptions: { content: string, embeds: Embed[] } = {
-    content: `Refreshing server status <t:${Math.floor( (Date.now() + minecraft.refreshInterval) / 1000 ) - 3}:R>`,
-    embeds: [embed]
+async function updateMessageEmbed(client: DiscordClient, embedData: [Embed, Base64String | null], message?: Message | null): Promise<void> {  
+  const messageSendOptions: BaseMessageOptions = {
+    content: `Refreshing server status <t:${Math.floor( (Date.now() + minecraft.refreshInterval) / 1000 )}:R>`,
   }
 
   if (!message) {
     Logger.warn("MC Server status message does not exist, creating new one...")
     const serverStatusChannel = await getServerStatusChannel(client);
     const serverStatusMessage = await serverStatusChannel.send(messageSendOptions)
-    db.push('/messageId', serverStatusMessage.id)
+    db.push('/minecraft/messageId', serverStatusMessage.id)
     return;
+  }
+
+  const savedServerIcon = await db.getData('/minecraft/serverIcon').catch(() => null)
+  if (embedData[1] && (savedServerIcon !== embedData[1]) ) {
+    messageSendOptions["files"] = [new AttachmentBuilder(Buffer.from(embedData[1].split(',')[1], 'base64'), { name: 'server-icon.png' })]
+    const editedEmbed = EmbedBuilder.from(embedData[0])
+    editedEmbed.setThumbnail(`attachment://server-icon.png`)
+    messageSendOptions["embeds"] = [editedEmbed]
+    db.push('/minecraft/serverIcon', embedData[1])
   }
 
   try {
@@ -78,19 +87,19 @@ async function updateMessageEmbed(client: DiscordClient, embed: Embed, message?:
     }
     const serverStatusChannel = await getServerStatusChannel(client);
     const serverStatusMessage = await serverStatusChannel.send(messageSendOptions)
-    db.push('/messageId', serverStatusMessage.id)
+    db.push('/minecraft/messageId', serverStatusMessage.id)
     return;
   }
 }
 
-async function updateServerStatusEmbed(): Promise<Embed> {
+async function updateServerStatusEmbed(): Promise<[Embed, Base64String | null]> {
   const serverData = await queryServerStatus();
   const serverStatusEmbed = new EmbedBuilder()
   
   if (!serverData[0] || !serverData[0].status?.players) {
     serverStatusEmbed.setAuthor({ name: 'The server is currently offline.', iconURL: minecraft.iconSettings.offline })
     serverStatusEmbed.setColor("#000000")
-    return serverStatusEmbed as unknown as Embed
+    return [serverStatusEmbed, null] as unknown as [Embed, null]
   }
   
   const activePlayerCount = serverData[0].status?.players.sample?.length ?? serverData[0].status?.players.online
@@ -108,7 +117,11 @@ async function updateServerStatusEmbed(): Promise<Embed> {
   .setColor( (activePlayerCount >= 1 ? "#3fb950" : "#000000") )
   .setDescription(playerList)
   .setFooter({ text: (serverLatency ? `Latency: ${serverLatency}ms` : "​") })
-  return serverStatusEmbed as unknown as Embed
+
+  if (serverData[0].status.favicon) {
+    return [serverStatusEmbed, serverData[0].status.favicon] as unknown as [Embed, Base64String]
+  }
+  return [serverStatusEmbed, null] as unknown as [Embed, null]
 }   
 
 export = {
